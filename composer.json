@@ -3,7 +3,7 @@
         "phpunit/phpunit": "3.7.*",
         "theseer/fxsl": "1.0.*@dev",
         "theseer/phpdox": "0.6.6.1",
-	    "nikic/php-parser": "1.*",
+    	"nikic/php-parser": "1.*",
         "squizlabs/php_codesniffer": "1.4.6",
         "phpmd/phpmd": "1.5.0",
         "h4cc/phpqatools": "*",
