@@ -9,8 +9,5 @@ Read more at http://systemsarchitect.net/continuous-integration-for-php-with-jen
 php composer.phar install
 ```
 
-```
-sudo vendor/bin/phing install
-```
 
 
