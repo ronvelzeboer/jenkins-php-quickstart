@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<project name="name-of-project" default="build">
+ <!-- By default, we assume all tools to be on the $PATH -->
+ <property name="toolsdir" value=""/>
 
-<project name="name-of-project" default="build" basedir=".">
+ <!-- Uncomment the following when the tools are in ${basedir}/vendor/bin -->
+ <!-- <property name="toolsdir" value="${basedir}/vendor/bin/"/> -->
+
  <target name="build"
-   depends="prepare,lint,phploc,pdepend,phpmd-ci,phpcs-ci,phpcpd,phpdox,phpunit,phpcb"/>
+         depends="prepare,lint,phploc-ci,pdepend,phpmd-ci,phpcs-ci,phpcpd-ci,phpunit,phpdox"
+         description=""/>
 
  <target name="build-parallel"
-   depends="prepare,lint,tools-parallel,phpunit,phpcb"/>
+         depends="prepare,lint,tools-parallel,phpunit,phpdox"
+         description=""/>
 
  <target name="tools-parallel" description="Run tools in parallel">
   <parallel threadCount="2">
@@ -13,136 +20,159 @@
     <antcall target="pdepend"/>
     <antcall target="phpmd-ci"/>
    </sequential>
-   <antcall target="phpcpd"/>
+   <antcall target="phpcpd-ci"/>
    <antcall target="phpcs-ci"/>
-   <antcall target="phploc"/>
-   <antcall target="phpdox"/>
+   <antcall target="phploc-ci"/>
   </parallel>
  </target>
 
- <target name="clean" description="Cleanup build artifacts">
-  <delete dir="${project.basedir}/build/api"/>
-  <delete dir="${project.basedir}/build/code-browser"/>
-  <delete dir="${project.basedir}/build/coverage"/>
-  <delete dir="${project.basedir}/build/logs"/>
-  <delete dir="${project.basedir}/build/pdepend"/>
-  <delete dir="${project.basedir}/build/phpdox"/>
+ <target name="clean"
+         unless="clean.done"
+         description="Cleanup build artifacts">
+  <delete dir="${basedir}/build/api"/>
+  <delete dir="${basedir}/build/coverage"/>
+  <delete dir="${basedir}/build/logs"/>
+  <delete dir="${basedir}/build/pdepend"/>
+  <delete dir="${basedir}/build/phpdox"/>
+  <property name="clean.done" value="true"/>
  </target>
 
- <target name="prepare" depends="clean" description="Prepare for build">
-  <mkdir dir="${project.basedir}/build/api"/>
-  <mkdir dir="${project.basedir}/build/code-browser"/>
-  <mkdir dir="${project.basedir}/build/coverage"/>
-  <mkdir dir="${project.basedir}/build/logs"/>
-  <mkdir dir="${project.basedir}/build/pdepend"/>
-  <mkdir dir="${project.basedir}/build/phpdox"/>
+ <target name="prepare"
+         unless="prepare.done"
+         depends="clean"
+         description="Prepare for build">
+  <mkdir dir="${basedir}/build/api"/>
+  <mkdir dir="${basedir}/build/coverage"/>
+  <mkdir dir="${basedir}/build/logs"/>
+  <mkdir dir="${basedir}/build/pdepend"/>
+  <mkdir dir="${basedir}/build/phpdox"/>
+  <property name="prepare.done" value="true"/>
  </target>
 
  <target name="lint" description="Perform syntax check of sourcecode files">
-  <apply executable="php" checkreturn="1">
+  <apply executable="php" failonerror="true">
    <arg value="-l" />
 
-   <fileset dir="${project.basedir}/src">
+   <fileset dir="${basedir}/src">
     <include name="**/*.php" />
+    <modified />
    </fileset>
 
-   <fileset dir="${project.basedir}/tests">
+   <fileset dir="${basedir}/tests">
     <include name="**/*.php" />
+    <modified />
    </fileset>
   </apply>
  </target>
 
- <target name="phploc" description="Measure project size using PHPLOC">
-  <exec executable="${project.basedir}/vendor/bin/phploc" logoutput="true">
-   <arg value="--log-csv" />
-   <arg value="${project.basedir}/build/logs/phploc.csv" />
-   <arg path="${project.basedir}/src" />
+ <target name="phploc"
+         description="Measure project size using PHPLOC and print human readable output. Intended for usage on the command line.">
+  <exec executable="${toolsdir}phploc">
+   <arg value="--count-tests" />
+   <arg path="${basedir}/src" />
+   <arg path="${basedir}/tests" />
   </exec>
  </target>
 
- <target name="pdepend" description="Calculate software metrics using PHP_Depend">
-  <exec executable="${project.basedir}/vendor/bin/pdepend" logoutput="true">
-   <arg value="--jdepend-xml=${project.basedir}/build/logs/jdepend.xml" />
-   <arg value="--jdepend-chart=${project.basedir}/build/pdepend/dependencies.svg" />
-   <arg value="--overview-pyramid=${project.basedir}/build/pdepend/overview-pyramid.svg" />
-   <arg path="${project.basedir}/src" />
+ <target name="phploc-ci"
+         depends="prepare"
+         description="Measure project size using PHPLOC and log result in CSV and XML format. Intended for usage within a continuous integration environment.">
+  <exec executable="${toolsdir}phploc">
+   <arg value="--count-tests" />
+   <arg value="--log-csv" />
+   <arg path="${basedir}/build/logs/phploc.csv" />
+   <arg value="--log-xml" />
+   <arg path="${basedir}/build/logs/phploc.xml" />
+   <arg path="${basedir}/src" />
+   <arg path="${basedir}/tests" />
+  </exec>
+ </target>
+
+ <target name="pdepend"
+         depends="prepare"
+         description="Calculate software metrics using PHP_Depend and log result in XML format. Intended for usage within a continuous integration environment.">
+  <exec executable="${toolsdir}pdepend">
+   <arg value="--jdepend-xml=${basedir}/build/logs/jdepend.xml" />
+   <arg value="--jdepend-chart=${basedir}/build/pdepend/dependencies.svg" />
+   <arg value="--overview-pyramid=${basedir}/build/pdepend/overview-pyramid.svg" />
+   <arg path="${basedir}/src" />
   </exec>
  </target>
 
  <target name="phpmd"
          description="Perform project mess detection using PHPMD and print human readable output. Intended for usage on the command line before committing.">
-  <exec executable="${project.basedir}/vendor/bin/phpmd" logoutput="true">
-   <arg path="${project.basedir}/src" />
+  <exec executable="${toolsdir}phpmd">
+   <arg path="${basedir}/src" />
    <arg value="text" />
-   <arg value="${project.basedir}/phpmd.xml" />
+   <arg path="${basedir}/phpmd.xml" />
   </exec>
  </target>
 
- <target name="phpmd-ci" description="Perform project mess detection using PHPMD creating a log file for the continuous integration server">
-  <exec executable="${project.basedir}/vendor/bin/phpmd" logoutput="true">
-   <arg path="${project.basedir}/src" />
+ <target name="phpmd-ci"
+         depends="prepare"
+         description="Perform project mess detection using PHPMD and log result in XML format. Intended for usage within a continuous integration environment.">
+  <exec executable="${toolsdir}phpmd">
+   <arg path="${basedir}/src" />
    <arg value="xml" />
-   <arg value="${project.basedir}/phpmd.xml" />
+   <arg path="${basedir}/phpmd.xml" />
    <arg value="--reportfile" />
-   <arg value="${project.basedir}/build/logs/pmd.xml" />
+   <arg path="${basedir}/build/logs/pmd.xml" />
   </exec>
  </target>
 
  <target name="phpcs"
          description="Find coding standard violations using PHP_CodeSniffer and print human readable output. Intended for usage on the command line before committing.">
-  <exec executable="${project.basedir}/vendor/bin/phpcs" logoutput="true">
-   <arg value="--standard=${project.basedir}/phpcs.xml" />
-   <arg path="${project.basedir}/src" />
+  <exec executable="${toolsdir}phpcs">
+   <arg value="--standard=PSR2" />
+   <arg value="--extensions=php" />
+   <arg value="--ignore=autoload.php" />
+   <arg path="${basedir}/src" />
+   <arg path="${basedir}/tests" />
   </exec>
  </target>
 
- <target name="phpcs-ci" description="Find coding standard violations using PHP_CodeSniffer creating a log file for the continuous integration server">
-  <exec executable="${project.basedir}/vendor/bin/phpcs" output="/dev/null">
+ <target name="phpcs-ci"
+         depends="prepare"
+         description="Find coding standard violations using PHP_CodeSniffer and log result in XML format. Intended for usage within a continuous integration environment.">
+  <exec executable="${toolsdir}phpcs" output="/dev/null">
    <arg value="--report=checkstyle" />
-   <arg value="--report-file=${project.basedir}/build/logs/checkstyle.xml" />
-   <arg value="--standard=${project.basedir}/phpcs.xml" />
-   <arg path="${project.basedir}/src" />
+   <arg value="--report-file=${basedir}/build/logs/checkstyle.xml" />
+   <arg value="--standard=PSR2" />
+   <arg value="--extensions=php" />
+   <arg value="--ignore=autoload.php" />
+   <arg path="${basedir}/src" />
   </exec>
  </target>
 
- <target name="phpcpd" description="Find duplicate code using PHPCPD">
-  <exec executable="${project.basedir}/vendor/bin/phpcpd">
+ <target name="phpcpd"
+         description="Find duplicate code using PHPCPD and print human readable output. Intended for usage on the command line before committing.">
+  <exec executable="${toolsdir}phpcpd">
+   <arg path="${basedir}/src" />
+  </exec>
+ </target>
+
+ <target name="phpcpd-ci"
+         depends="prepare"
+         description="Find duplicate code using PHPCPD and log result in XML format. Intended for usage within a continuous integration environment.">
+  <exec executable="${toolsdir}phpcpd">
    <arg value="--log-pmd" />
-   <arg value="${project.basedir}/build/logs/pmd-cpd.xml" />
-   <arg path="${project.basedir}/src" />
+   <arg path="${basedir}/build/logs/pmd-cpd.xml" />
+   <arg path="${basedir}/src" />
   </exec>
  </target>
 
- <target name="phpdox" description="Generate API documentation using phpDox">
-  <exec executable="${project.basedir}/vendor/bin/phpdox"/>
- </target>
-
- <target name="phpunit" description="Run unit tests with PHPUnit">
-  <exec executable="${project.basedir}/vendor/bin/phpunit" logoutput="true" checkreturn="1">
-   <arg value="--coverage-clover" />
-   <arg path="${project.basedir}/build/logs/clover.xml" />
-   <arg value="--coverage-html" />
-   <arg path="${project.basedir}/build/logs/." />   
+ <target name="phpunit"
+         depends="prepare"
+         description="Run unit tests with PHPUnit">
+  <exec executable="${toolsdir}phpunit" failonerror="true">
+   <arg value="--configuration"/>
+   <arg path="${basedir}/phpunit.xml"/>
   </exec>
  </target>
 
- <target name="phpcb" description="Aggregate tool output with PHP_CodeBrowser">
-  <exec executable="${project.basedir}/vendor/bin/phpcb">
-   <arg value="--log" />
-   <arg path="${project.basedir}/build/logs" />
-   <arg value="--source" />
-   <arg path="${project.basedir}/src" />
-   <arg value="--output" />
-   <arg path="${project.basedir}/build/code-browser" />
-  </exec>
+ <target name="phpdox"
+         depends="phploc-ci,phpcs-ci,phpmd-ci"
+         description="Generate project documentation using phpDox">
+  <exec executable="${toolsdir}phpdox" dir="${basedir}"/>
  </target>
- 
- <target name="install" description="Prepare files and directories for Jenkins">
- 	<mkdir dir="./build" />
- 	<mkdir dir="./generatedJUnitFiles" />
- 	
- 	<chown file="./build" user="jenkins.jenkins" />
- 	<chown file="./generatedJUnitFiles" user="jenkins.jenkins" />
- </target>
- 
 </project>
