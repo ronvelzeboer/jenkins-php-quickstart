@@ -11,14 +11,6 @@ Please make sure the
 
 ```
 php composer.phar install
-ln -s $PWD/vendor/bin/pdepend /usr/local/bin/pdepend
-ln -s $PWD/vendor/bin/phpcbf /usr/local/bin/phpcbf
-ln -s $PWD/vendor/bin/phpcpd /usr/local/bin/phpcpd
-ln -s $PWD/vendor/bin/phpcs /usr/local/bin/phpcs
-ln -s $PWD/vendor/bin/phpdox /usr/local/bin/phpdox
-ln -s $PWD/vendor/bin/phploc /usr/local/bin/phploc
-ln -s $PWD/vendor/bin/phpmd /usr/local/bin/phpmd
-ln -s $PWD/vendor/bin/phpunit /usr/local/bin/phpunit
 ```
 
 
