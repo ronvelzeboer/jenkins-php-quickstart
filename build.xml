@@ -26,6 +26,7 @@
   <delete dir="${project.basedir}/build/coverage"/>
   <delete dir="${project.basedir}/build/logs"/>
   <delete dir="${project.basedir}/build/pdepend"/>
+  <delete dir="${project.basedir}/build/phpdox"/>
  </target>
 
  <target name="prepare" depends="clean" description="Prepare for build">
@@ -117,7 +118,12 @@
  </target>
 
  <target name="phpunit" description="Run unit tests with PHPUnit">
-  <exec executable="${project.basedir}/vendor/bin/phpunit" logoutput="true" checkreturn="1"/>
+  <exec executable="${project.basedir}/vendor/bin/phpunit" logoutput="true" checkreturn="1">
+   <arg value="--coverage-clover" />
+   <arg path="${project.basedir}/build/logs/clover.xml" />
+   <arg value="--coverage-html" />
+   <arg path="${project.basedir}/build/logs/." />   
+  </exec>
  </target>
 
  <target name="phpcb" description="Aggregate tool output with PHP_CodeBrowser">
