@@ -1,12 +1,11 @@
 {
     "require": {
-        "phpunit/phpunit": "3.7.*",
-        "squizlabs/php_codesniffer": "1.4.6",
-        "phploc/phploc": "2.0.2",
+        "phpunit/phpunit": "4.6.*",
+        "squizlabs/php_codesniffer": "2.3.0",
+        "phploc/phploc": "2.0.4",
         "pdepend/pdepend" : "2.0.6",
-        "phpmd/phpmd": "1.5.0",
-        "sebastian/phpcpd": "1.4.3",
-        "theseer/phpdox": "0.6.6.1",
-        "phing/phing": "2.6.1"
+        "phpmd/phpmd": "2.2.*",
+        "sebastian/phpcpd": "2.0.*",
+        "theseer/phpdox": "0.6.6.1"
     }
 }
