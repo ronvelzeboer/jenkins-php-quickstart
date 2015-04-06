@@ -10,6 +10,7 @@ Please make sure the
 ## Installation
 
 ```
+php composer.phar self-update
 php composer.phar install
 ```
 
