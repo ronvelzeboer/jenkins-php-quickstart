@@ -5,8 +5,6 @@ Read more at http://systemsarchitect.net/continuous-integration-for-php-with-jen
 
 IMPORTANT: Please ignore the "vendor/bin/phing -logger phing.listener.NoBannerLogger" and "Delete Invoke Ant" instructions, when doing the steps explained on systemsarchitect.net
 
-Please make sure the 
-
 ## Installation
 
 ```
